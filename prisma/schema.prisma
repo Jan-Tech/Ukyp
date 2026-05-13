@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  PROFESSIONAL
+  ADMIN
+}
+
+enum City {
+  ASHGABAT
+  TURKMENABAT
+  DASHOGUZ
+  MARY
+  BALKANABAT
+  TURKMENBASHI
+}
+
+enum CategorySlug {
+  IT
+  DESIGN
+  ARCHITECTURE
+  CONSTRUCTION
+  EDUCATION
+  MEDICINE
+  LAW
+  FINANCE
+  BEAUTY
+  OTHER
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String
+  email         String        @unique
+  phone         String?
+  passwordHash  String
+  role          Role          @default(CLIENT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  professional  Professional?
+  reviewsGiven  Review[]      @relation("ReviewAuthor")
+}
+
+model Professional {
+  id            String        @id @default(cuid())
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bio           String?
+  bioRu         String?
+  category      CategorySlug
+  skills        String[]
+  skillsRu      String[]
+  city          City
+  avatarUrl     String?
+  hourlyRate    Int?
+  yearsExp      Int           @default(0)
+
+  isVerified    Boolean       @default(false)
+  isBoosted     Boolean       @default(false)
+  boostExpiresAt DateTime?
+
+  portfolio     PortfolioItem[]
+  reviews       Review[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([category])
+  @@index([city])
+  @@index([isVerified])
+  @@index([isBoosted])
+}
+
+model PortfolioItem {
+  id              String        @id @default(cuid())
+  professionalId  String
+  professional    Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  title           String
+  titleRu         String?
+  description     String?
+  descriptionRu   String?
+  imageUrl        String?
+  projectUrl      String?
+  createdAt       DateTime      @default(now())
+}
+
+model Review {
+  id              String        @id @default(cuid())
+  professionalId  String
+  professional    Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  authorId        String
+  author          User          @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  rating          Int
+  comment         String?
+  createdAt       DateTime      @default(now())
+
+  @@unique([professionalId, authorId])
+  @@index([professionalId])
+}
