@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type Locale, getT } from "@/lib/i18n";
 
 type Role = "CLIENT" | "PROFESSIONAL";
@@ -13,22 +14,68 @@ export default function RegisterPage() {
   const [locale, setLocale] = useState<Locale>("tk");
   const [role, setRole] = useState<Role>("CLIENT");
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "", category: "", city: "", bio: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
   const t = getT(locale);
 
   function set(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
+    setError("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (form.password !== form.confirm) return alert(locale === "tk" ? "Açar sözler deň däl" : "Пароли не совпадают");
-    // TODO: POST /api/auth/register
+    setError("");
+
+    if (form.password !== form.confirm) {
+      setError(locale === "tk" ? "Açar sözler deň däl" : "Пароли не совпадают");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, role }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? (locale === "tk" ? "Ýalňyşlyk ýüze çykdy" : "Произошла ошибка"));
+      } else {
+        setSuccess(true);
+        setTimeout(() => router.push("/auth/login"), 2000);
+      }
+    } catch {
+      setError(locale === "tk" ? "Tor ýalňyşlygy. Gaýtadan synanyşyň." : "Ошибка сети. Попробуйте снова.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4">
+        <div className="card p-10 text-center max-w-sm w-full">
+          <div className="text-5xl mb-4">✅</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            {locale === "tk" ? "Hasap döredildi!" : "Аккаунт создан!"}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {locale === "tk" ? "Giriş sahypasyna ugrukdyrylýar..." : "Перенаправление на страницу входа..."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
-        {/* Language toggle */}
         <div className="flex justify-end gap-2 mb-6">
           <button onClick={() => setLocale("tk")} className={`px-3 py-1 rounded text-xs font-bold border ${locale === "tk" ? "bg-primary text-white border-primary" : "border-gray-200"}`}>TK</button>
           <button onClick={() => setLocale("ru")} className={`px-3 py-1 rounded text-xs font-bold border ${locale === "ru" ? "bg-primary text-white border-primary" : "border-gray-200"}`}>RU</button>
@@ -53,6 +100,12 @@ export default function RegisterPage() {
               </button>
             ))}
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -82,7 +135,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Professional-only fields */}
             {role === "PROFESSIONAL" && (
               <>
                 <div className="grid grid-cols-2 gap-3">
@@ -112,7 +164,17 @@ export default function RegisterPage() {
               </>
             )}
 
-            <button type="submit" className="btn-primary w-full py-2.5 mt-2">{t.auth.registerBtn}</button>
+            <button type="submit" disabled={loading} className="btn-primary w-full py-2.5 mt-2 flex items-center justify-center gap-2">
+              {loading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  {locale === "tk" ? "Garaşyň..." : "Подождите..."}
+                </>
+              ) : t.auth.registerBtn}
+            </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
