@@ -8,7 +8,7 @@ import ReviewForm from "@/components/professional/ReviewForm";
 // Placeholder data — replace with prisma fetch in production
 const MOCK_PROFESSIONAL = {
   id: "1",
-  user: { name: "Aýgül Meredowa", email: "ayg@example.com", phone: "+993 65 123456" },
+  user: { name: "Plany Planyyewa", email: "plany@example.com", phone: "+993 65 000000" },
   category: "DESIGN",
   city: "ASHGABAT",
   bio: "Grafik we UI/UX dizaýner. 6 ýyllyk tejribe. Web saýtlar, logotiplar, brendirleme.",
@@ -26,8 +26,8 @@ const MOCK_PROFESSIONAL = {
     { id: "p3", title: "Mobil applikasiýa", titleRu: "Мобильное приложение", imageUrl: null, description: "E-commerce mobil dizaýny", descriptionRu: "Мобильный дизайн e-commerce" },
   ],
   reviews: [
-    { id: "r1", author: { name: "Merdan A." }, rating: 5, comment: "Gaty gowy iş! Wagtynda we hil bilen ýerine ýetirdi.", createdAt: "2026-04-10" },
-    { id: "r2", author: { name: "Ogulgerek B." }, rating: 4, comment: "Professional we düşünjeli dizaýner.", createdAt: "2026-03-22" },
+    { id: "r1", author: { name: "Pokgi P." }, rating: 5, comment: "Gaty gowy iş! Wagtynda we hil bilen ýerine ýetirdi.", createdAt: "2026-04-10" },
+    { id: "r2", author: { name: "Yatma Y." }, rating: 4, comment: "Professional we düşünjeli dizaýner.", createdAt: "2026-03-22" },
   ],
 };
 
